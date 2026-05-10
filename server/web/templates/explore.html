@@ -1,0 +1,53 @@
+{{define "content"}}
+<div class="container" style="padding-top:2rem">
+
+  <div class="explore-header">
+    <h1>Browse Skills</h1>
+    <form class="search-bar" method="GET" action="/explore/skills">
+      <input class="search-input" type="text" name="q" value="{{.Keyword}}" placeholder="Search skills…"/>
+      <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+  </div>
+
+  {{if .Skills}}
+  <p class="result-count">{{.Total}} skill{{if ne .Total 1}}s{{end}}{{if .Keyword}} matching <em>{{.Keyword}}</em>{{end}}</p>
+  <div class="card-grid">
+    {{range .Skills}}
+    <a class="skill-card" href="/skills/{{.User}}/{{.Name}}">
+      <div class="skill-card-header">
+        <span class="skill-name">{{.User}}/{{.Name}}</span>
+        <span class="score-badge score-{{scoreTier .Score}}">{{.Score}}</span>
+      </div>
+      <p class="skill-desc">{{.Description}}</p>
+      <div class="skill-card-footer">
+        {{if .License}}<span class="badge">{{.License}}</span>{{end}}
+        <span class="skill-meta">v{{.Version}} &nbsp;·&nbsp; {{.Downloads}} installs</span>
+      </div>
+      <code class="install-cmd">skill install {{.User}}/{{.Name}}</code>
+    </a>
+    {{end}}
+  </div>
+
+  {{if gt .Pages 1}}
+  <div class="pagination">
+    {{if gt .Page 1}}
+    <a class="btn btn-outline" href="?q={{.Keyword}}&page={{dec .Page}}">← Prev</a>
+    {{end}}
+    <span class="page-info">Page {{.Page}} of {{.Pages}}</span>
+    {{if lt .Page .Pages}}
+    <a class="btn btn-outline" href="?q={{.Keyword}}&page={{inc .Page}}">Next →</a>
+    {{end}}
+  </div>
+  {{end}}
+
+  {{else}}
+  <div class="empty-state">
+    <p>No skills found{{if .Keyword}} matching <em>{{.Keyword}}</em>{{end}}.</p>
+    {{if .Keyword}}
+    <a class="btn btn-outline" href="/explore/skills">Clear search</a>
+    {{end}}
+  </div>
+  {{end}}
+
+</div>
+{{end}}
