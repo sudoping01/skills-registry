@@ -1,0 +1,33 @@
+{{define "content"}}
+<div class="container" style="padding-top:3rem; max-width:520px; margin:0 auto">
+
+  <h1>Get an API Token</h1>
+  <p class="muted">Use this token with <code>skill login</code> or the <code>SKILLHUB_TOKEN</code> env var to publish skills.</p>
+
+  {{if .Error}}
+  <div class="alert alert-error">{{.Error}}</div>
+  {{end}}
+
+  {{if .Generated}}
+  <div class="alert alert-success">
+    <strong>Token generated for @{{.Username}}</strong> — copy it now, it will not be shown again.
+  </div>
+  <div class="token-display">
+    <code>{{.Token}}</code>
+  </div>
+  <p class="muted" style="margin-top:1rem">Save it with the CLI:</p>
+  <pre class="install-cmd-large" style="font-size:.9rem">skill login
+# paste your token when prompted</pre>
+  {{else}}
+  <form class="token-form" method="POST" action="/token/new">
+    <label for="username">Username</label>
+    <input id="username" class="form-input" type="text" name="username"
+           value="{{.Username}}" placeholder="your-username" required
+           pattern="[a-z0-9][a-z0-9-]*[a-z0-9]|[a-z0-9]"/>
+    <p class="field-hint">Lowercase letters, digits, and hyphens. This becomes your publisher name.</p>
+    <button class="btn btn-primary" type="submit">Generate Token</button>
+  </form>
+  {{end}}
+
+</div>
+{{end}}
