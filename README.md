@@ -1,98 +1,174 @@
-# SkillHub
+# SkillHub CLI
 
-An open-source registry and CLI for AI agent skills — like npm, but for SKILL.md bundles.
+> The official CLI for [SkillHub](https://github.com/sudoping01/skillhub) — the open-source registry for AI agent skills.
 
-## Quick Start
+Install, publish, search, and manage SKILL.md bundles from your terminal.
 
-### Build
+---
+
+## Repos
+
+| Repo | Purpose |
+|---|---|
+| **[sudoping01/skills-registry](https://github.com/sudoping01/skills-registry)** | This repo — CLI + standalone server |
+| **[sudoping01/skillhub](https://github.com/sudoping01/skillhub)** | SkillHub server (Forgejo fork) — self-host the full registry |
+
+---
+
+## Install
 
 ```bash
-make build
+git clone https://github.com/sudoping01/skills-registry
+cd skills-registry
+make install        # builds and copies skill to /usr/local/bin
+skill --help
 ```
 
-### Run the registry
+Or build without installing:
 
 ```bash
-make run-server
+make build          # → ./bin/skill
 ```
 
-### Use the CLI
+---
+
+## CLI Commands
 
 ```bash
-# Validate a skill
-./bin/skill validate ./my-skill
-
-# Publish
-SKILLHUB_USER=sudoping01 ./bin/skill push ./my-skill
-
-# Install
-./bin/skill install sudoping01/my-skill
-
-# Install a specific version
-./bin/skill install sudoping01/my-skill@1.2.0
-
-# Search
-./bin/skill search "pdf extraction"
-
-# Info
-./bin/skill info sudoping01/my-skill
+skill init          # scaffold a new skill directory interactively
+skill validate .    # validate a skill and get a quality score (0-100)
+skill push .        # publish to the registry
+skill pull user/name           # fetch just the SKILL.md (no install)
+skill install user/name        # install a skill + all its dependencies
+skill install user/name@1.2.0  # install a specific version
+skill update .      # bump patch version and re-publish
+skill search "pdf extraction"              # search the registry
+skill search --license MIT --sort stars    # filter results
+skill search --compat Claude --sort downloads
+skill info user/name    # show skill metadata
+skill login             # save your API token locally
 ```
+
+---
 
 ## Skill Format
 
-A skill is a directory with a `SKILL.md` file at the root:
+A skill is a directory with a `SKILL.md` at the root:
 
 ```
 my-skill/
-├── SKILL.md          ← Required
-├── scripts/          ← Optional
-├── references/       ← Optional
-└── assets/           ← Optional
+├── SKILL.md          ← required
+├── scripts/          ← optional
+├── references/       ← optional
+└── assets/           ← optional
 ```
 
 `SKILL.md` starts with YAML frontmatter:
 
 ```markdown
 ---
-name: "my-skill"
-description: "Publish datasets to Hugging Face Hub. Use when uploading datasets."
-license: "Apache-2.0"
-compatibility: "Tested with Python 3.8+"
+name: "web-scraper"
+description: "Scrape structured data from any webpage."
+license: "MIT"
+compatibility: "Claude Code, Claude Sonnet 4"
 metadata:
-  author: "ml-team"
+  author: "sudoping01"
   version: "1.0.0"
+dependencies:
+  - "sudoping01/html-parser"
+  - "sudoping01/file-writer@1.2.0"
 ---
 
-# My Skill
+# Web Scraper
+
+## Overview
 ...
 ```
 
 **Validation rules:**
-- `name` — required; lowercase, digits, hyphens; 1–64 chars; must match directory name
-- `description` — required; max 1024 chars
+- `name` — required; lowercase + digits + hyphens; 1–64 chars; must match directory name
+- `description` — required; max 1024 chars; should start with a verb
 - `compatibility` — optional; max 500 chars
-- Total bundle size — max 2 MB
+- `dependencies` — optional; list of `user/name` or `user/name@version`
+- Bundle max size: 2 MB
+
+---
 
 ## Environment Variables
 
 | Variable | Default | Description |
 |---|---|---|
-| `SKILLHUB_REGISTRY` | `http://localhost:8080` | Registry URL |
-| `SKILLHUB_USER` | — | Your username (for push) |
-| `SKILLHUB_TOKEN` | — | Auth token (optional; enables token auth on server) |
-| `SKILLHUB_DATA_DIR` | `./data` | Server data directory |
-| `SKILLHUB_PORT` | `8080` | Server port |
+| `SKILLHUB_REGISTRY` | `http://localhost:3000` | Registry URL |
+| `SKILLHUB_USER` | — | Your username (required for push/update) |
+| `SKILLHUB_TOKEN` | — | API token (or use `skill login`) |
 
-## API
+---
 
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/health` | Health check |
-| `GET` | `/api/v1/search?q=<query>` | Search skills |
-| `GET` | `/api/v1/skills/{user}/{name}/info` | Get skill metadata |
-| `GET` | `/api/v1/skills/{user}/{name}/download?version=<v>` | Download .skill archive |
-| `POST` | `/api/v1/skills/{user}/{name}` | Publish a skill |
+## Self-hosting
+
+The standalone server in `server/` is a lightweight alternative to the full Forgejo-based registry.
+For the full-featured self-hosted registry with user accounts, stars, and a web UI, use the
+**[SkillHub server](https://github.com/sudoping01/skillhub)**.
+
+```bash
+# Standalone server (no user accounts, simple token auth)
+make build
+SKILLHUB_PORT=3000 ./bin/skillhub-server
+
+# Full registry (Docker)
+git clone https://github.com/sudoping01/skillhub
+cd skillhub
+make up
+```
+
+---
+
+## API Reference
+
+The CLI talks to the SkillHub API. All endpoints are prefixed with `/api/skillhub/v1`.
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/search?q=&license=&compat=&sort=` | — | Search skills |
+| `GET` | `/skills/{user}/{name}` | — | Get skill metadata |
+| `GET` | `/skills/{user}/{name}/download` | — | Download `.skill` archive |
+| `GET` | `/skills/{user}/{name}/readme` | — | Fetch raw SKILL.md |
+| `GET` | `/skills/{user}/{name}/badge` | — | SVG badge |
+| `POST` | `/skills/{user}/{name}` | Bearer token | Publish a skill |
+| `PUT` | `/skills/{user}/{name}/star` | Bearer token | Star a skill |
+| `DELETE` | `/skills/{user}/{name}/star` | Bearer token | Unstar a skill |
+
+---
+
+## Publishing with CI/CD
+
+Tag a release and let GitHub Actions publish automatically.
+
+Copy `.github/workflows/publish-skill.yml` from
+[contrib/github-publish-skill.yml](https://github.com/sudoping01/skills-registry/blob/main/contrib/github-publish-skill.yml)
+into your skill repo and add two secrets:
+- `SKILLHUB_TOKEN` — your API token
+- `SKILLHUB_REGISTRY` — your SkillHub instance URL
+
+Then push a tag:
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+---
+
+## Development
+
+```bash
+make build          # build CLI binary
+make test           # run all tests
+make docker-build   # build CLI Docker image
+make release        # cross-platform binaries → dist/
+```
+
+---
 
 ## License
 
-GPL v3
+GPL-3.0-or-later
