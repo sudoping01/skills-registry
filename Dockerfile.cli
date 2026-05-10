@@ -1,0 +1,23 @@
+# ─── Stage 1: Build the CLI ───────────────────────────────────────────────────
+FROM golang:1.24-alpine AS builder
+
+RUN apk add --no-cache git
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN go build -o /skill ./cmd/skill
+
+
+# ─── Stage 2: Minimal runtime ─────────────────────────────────────────────────
+FROM alpine:3.19
+
+RUN apk add --no-cache ca-certificates git
+
+COPY --from=builder /skill /usr/local/bin/skill
+
+ENTRYPOINT ["skill"]
+CMD ["--help"]
