@@ -1,0 +1,6 @@
+.git
+bin/
+data/
+.skills/
+*.skill
+.DS_Store
