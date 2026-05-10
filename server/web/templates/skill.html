@@ -1,0 +1,56 @@
+{{define "content"}}
+<div class="container" style="padding-top:2rem">
+  <div class="detail-grid">
+
+    <div class="detail-main">
+      <nav class="breadcrumb">
+        <a href="/explore/skills">Skills</a> / <a href="/skills/{{.Skill.User}}/{{.Skill.Name}}">{{.Skill.User}}/{{.Skill.Name}}</a>
+      </nav>
+
+      <h1 class="detail-title">{{.Skill.User}}/{{.Skill.Name}}</h1>
+      <p class="detail-desc">{{.Skill.Description}}</p>
+
+      <div class="install-block">
+        <span class="install-label">Install</span>
+        <code class="install-cmd-large">skill install {{.Skill.User}}/{{.Skill.Name}}</code>
+      </div>
+
+      {{if .Body}}
+      <section class="readme">
+        <h2>SKILL.md</h2>
+        <pre class="readme-body">{{.Body}}</pre>
+      </section>
+      {{end}}
+    </div>
+
+    <aside class="detail-sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">Quality Score</div>
+        <div class="score-display score-{{scoreTier .Skill.Score}}">{{.Skill.Score}}<span class="score-max">/100</span></div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">Details</div>
+        <table class="info-table">
+          <tr><td>Version</td><td><strong>{{.Skill.Version}}</strong></td></tr>
+          {{if .Skill.License}}<tr><td>License</td><td>{{.Skill.License}}</td></tr>{{end}}
+          <tr><td>Installs</td><td>{{.Skill.Downloads}}</td></tr>
+          <tr><td>Published</td><td>{{.Skill.PublishedAt}}</td></tr>
+          {{if .Skill.Compatibility}}<tr><td>Compat.</td><td>{{.Skill.Compatibility}}</td></tr>{{end}}
+        </table>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">Creator</div>
+        <a class="creator-link" href="/explore/skills?q={{.Skill.User}}">@{{.Skill.User}}</a>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">Download</div>
+        <a class="btn btn-primary btn-full" href="{{.Skill.DownloadURL}}">Download .skill</a>
+      </div>
+    </aside>
+
+  </div>
+</div>
+{{end}}
