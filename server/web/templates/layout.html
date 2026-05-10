@@ -1,0 +1,38 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{if .Title}}{{.Title}} — {{end}}SkillHub</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">
+        <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100" height="100" rx="16" fill="#fff"/>
+          <text x="50" y="70" font-size="62" text-anchor="middle" font-family="monospace" fill="#4f46e5">S</text>
+        </svg>
+        SkillHub
+      </a>
+      <div class="nav-links">
+        <a href="/explore/skills">Browse</a>
+        <a href="/token/new">Get Token</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    {{block "content" .}}{{end}}
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <span>SkillHub — open registry for AI agent skills &nbsp;·&nbsp; GPL v3</span>
+    </div>
+  </footer>
+</body>
+</html>
+{{end}}
